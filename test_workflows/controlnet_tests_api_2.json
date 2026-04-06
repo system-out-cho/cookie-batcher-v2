@@ -1,0 +1,439 @@
+{
+  "1": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "length": [
+        "209",
+        0
+      ],
+      "batch_size": 1,
+      "strength": 0.7,
+      "positive": [
+        "8",
+        0
+      ],
+      "negative": [
+        "9",
+        0
+      ],
+      "vae": [
+        "11",
+        0
+      ],
+      "control_video": [
+        "202",
+        0
+      ],
+      "reference_image": [
+        "216",
+        0
+      ]
+    },
+    "class_type": "WanVaceToVideo",
+    "_meta": {
+      "title": "WanVaceToVideo"
+    }
+  },
+  "5": {
+    "inputs": {
+      "seed": 242935894885187,
+      "steps": 6,
+      "cfg": 1,
+      "sampler_name": "lcm",
+      "scheduler": "sgm_uniform",
+      "denoise": 1,
+      "model": [
+        "76",
+        0
+      ],
+      "positive": [
+        "1",
+        0
+      ],
+      "negative": [
+        "1",
+        1
+      ],
+      "latent_image": [
+        "1",
+        2
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "6": {
+    "inputs": {
+      "unet_name": "wan2.1_vace_14B_fp16.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "8": {
+    "inputs": {
+      "text": "Hare running across meadow with trees and grass.",
+      "clip": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "9": {
+    "inputs": {
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走, ",
+      "clip": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "10": {
+    "inputs": {
+      "clip_name": "umt5_xxl_fp16.safetensors",
+      "type": "wan",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "11": {
+    "inputs": {
+      "vae_name": "wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "18": {
+    "inputs": {
+      "samples": [
+        "20",
+        0
+      ],
+      "vae": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "19": {
+    "inputs": {
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "test_cube",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "237",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "20": {
+    "inputs": {
+      "trim_amount": [
+        "1",
+        3
+      ],
+      "samples": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "TrimVideoLatent",
+    "_meta": {
+      "title": "TrimVideoLatent"
+    }
+  },
+  "34": {
+    "inputs": {
+      "value": 24
+    },
+    "class_type": "FloatConstant",
+    "_meta": {
+      "title": "Float Constant"
+    }
+  },
+  "76": {
+    "inputs": {
+      "lora_name": "WanVideo/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
+      "strength_model": 1,
+      "model": [
+        "116",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "99": {
+    "inputs": {
+      "video": "normal_hare_2.mp4",
+      "force_rate": [
+        "34",
+        0
+      ],
+      "custom_width": 0,
+      "custom_height": 0,
+      "frame_load_cap": [
+        "209",
+        0
+      ],
+      "skip_first_frames": 72,
+      "select_every_nth": 1,
+      "format": "Wan"
+    },
+    "class_type": "VHS_LoadVideo",
+    "_meta": {
+      "title": "Load Video (Upload) 🎥🅥🅗🅢"
+    }
+  },
+  "116": {
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "146",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "145": {
+    "inputs": {
+      "anything": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "Clean VRAM Used"
+    }
+  },
+  "146": {
+    "inputs": {
+      "nag_scale": 11,
+      "nag_alpha": 0.25,
+      "nag_tau": 2.5,
+      "input_type": "default",
+      "model": [
+        "6",
+        0
+      ],
+      "conditioning": [
+        "9",
+        0
+      ]
+    },
+    "class_type": "WanVideoNAG",
+    "_meta": {
+      "title": "WanVideoNAG"
+    }
+  },
+  "202": {
+    "inputs": {
+      "preprocessor": "ScribblePreprocessor",
+      "resolution": 512,
+      "image": [
+        "259",
+        0
+      ]
+    },
+    "class_type": "AIO_Preprocessor",
+    "_meta": {
+      "title": "AIO Aux Preprocessor"
+    }
+  },
+  "209": {
+    "inputs": {
+      "value": 110
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "INT Constant"
+    }
+  },
+  "216": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "upscale_method": "nearest-exact",
+      "keep_proportion": "stretch",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 2,
+      "device": "cpu",
+      "image": [
+        "248",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "217": {
+    "inputs": {
+      "images": [
+        "216",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "237": {
+    "inputs": {
+      "inputcount": 2,
+      "direction": "left",
+      "match_image_size": true,
+      "Update inputs": null,
+      "image_1": [
+        "145",
+        0
+      ],
+      "image_2": [
+        "248",
+        0
+      ]
+    },
+    "class_type": "ImageConcatMulti",
+    "_meta": {
+      "title": "Image Concatenate Multi"
+    }
+  },
+  "238": {
+    "inputs": {
+      "inputcount": 2,
+      "direction": "down",
+      "match_image_size": true,
+      "Update inputs": null,
+      "image_2": [
+        "248",
+        0
+      ]
+    },
+    "class_type": "ImageConcatMulti",
+    "_meta": {
+      "title": "Image Concatenate Multi"
+    }
+  },
+  "248": {
+    "inputs": {
+      "image": "300_bg_2.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "250": {
+    "inputs": {
+      "mode": "horizontal",
+      "images": [
+        "99",
+        0
+      ]
+    },
+    "class_type": "Image Flip",
+    "_meta": {
+      "title": "Image Flip"
+    }
+  },
+  "255": {
+    "inputs": {
+      "output_directory": "/disney/shared/projects",
+      "show": "SASS",
+      "sequence": "300.0",
+      "shot": "001.00",
+      "discipline": "(custom)",
+      "version": "300_001_001",
+      "filename_base": "{output_directory}/{show}/work/sequences/seq/{sequence}/{shot}/{discipline}/{filename_base}",
+      "prefix_template": "1",
+      "start_frame": 100,
+      "end_frame": 0,
+      "custom_show": "",
+      "custom_sequence": "",
+      "custom_shot": "render",
+      "custom_discipline": ""
+    },
+    "class_type": "AILabPipelineContext",
+    "_meta": {
+      "title": "AI Lab Pipeline Context"
+    }
+  },
+  "256": {
+    "inputs": {
+      "text": [
+        "255",
+        1
+      ]
+    },
+    "class_type": "ShowText|pysssss",
+    "_meta": {
+      "title": "Show Text 🐍"
+    }
+  },
+  "259": {
+    "inputs": {
+      "directory": "/disney/shared/projects/SASS/work/sequences/seq/300.0/001.00/render/300_001_001",
+      "image_load_cap": 110,
+      "skip_first_images": 0,
+      "select_every_nth": 1
+    },
+    "class_type": "VHS_LoadImagesPath",
+    "_meta": {
+      "title": "Load Images (Path) 🎥🅥🅗🅢"
+    }
+  },
+  "260": {
+    "inputs": {
+      "images": [
+        "259",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  }
+}
