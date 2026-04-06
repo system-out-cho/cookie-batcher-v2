@@ -6,6 +6,7 @@ import copy
 import requests
 import getpass
 import datetime
+import platform
 
 load_dotenv()
 
@@ -17,7 +18,7 @@ current_user = getpass.getuser()
 current_workflow = {}
 staged_plan = {}
 submitted_ids = []
-comfyui_url = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188")
+comfy_server = ""
 current_output_dir = ""
 
 # 1. Define the tool
@@ -110,6 +111,20 @@ tools = [
         }
     },
     {
+        "name": "set_machine",
+        "description": "Sets current machine to render on, check the status of, or cancel jobs on. You must ask this before asking to submit the jobs.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "machine_name": {
+                    "type":"string",
+                    "description": "Name of machine to render on. Available options are: kokoro, wopr, muthur, marvin, or local. Spelling is extremely important, auto-correct user and ensure the input matches one of the available options."
+                }
+            },
+            "required": ["machine_name"]
+        }
+    },
+    {
         "name": "submit_jobs",
         "description": "Submits all batched .json render files in the output directory to ComfyUI as jobs. Only call this after write_batch has completed.",
         "input_schema": {
@@ -118,7 +133,7 @@ tools = [
                 "output_dir": {
                     "type": "string",
                     "description": "Directory containing the batched .json render files to submit"
-                }
+                },
             },
             "required": ["output_dir"]
         }
@@ -200,6 +215,17 @@ def print_workflow() -> str:
     
     return "Workflow printed to terminal."
 
+def set_machine(machine_name: str):
+    global comfy_server
+
+    if (machine_name == "local"):
+        comfy_server = "insert_local_server_here"
+    else:
+        comfy_server = f"http://{machine_name.lower()}.fas.fa.disney.com:8188"
+    
+    return f"Current machine set to {machine_name}."
+
+
 def get_current_parameter(parameter_names: list) -> dict:
     results = {}
     for node_id, node in current_workflow.items():
@@ -268,6 +294,9 @@ def submit_jobs(output_dir: str) -> str:
     global submitted_ids
     submitted_ids = []
 
+    if (not comfy_server):
+        return "Please set a machine to render on before submitting jobs."
+
     json_files = sorted([
         f for f in os.listdir(output_dir) if f.endswith(".json")
     ])
@@ -297,13 +326,13 @@ def submit_jobs(output_dir: str) -> str:
         }
 
         try:
-            response = requests.post(f"{comfyui_url}/prompt", json=payload)
+            response = requests.post(f"{comfy_server}/prompt", json=payload)
             response.raise_for_status()
             prompt_id = response.json().get("prompt_id")
             submitted_ids.append(prompt_id)
             results.append(f"✅ {filename} → queued as {prompt_id}")
         except requests.exceptions.ConnectionError:
-            return f"❌ Could not connect to ComfyUI at {comfyui_url}. Is it running?"
+            return f"❌ Could not connect to ComfyUI at {comfy_server}. Is it running?"
         except requests.exceptions.HTTPError as e:
             results.append(f"❌ {filename} → failed: {e}")
 
@@ -315,11 +344,11 @@ def download_outputs() -> str:
         return "No submitted jobs found. Please submit jobs first."
     
     try:
-        history_response = requests.get(f"{comfyui_url}/history")
+        history_response = requests.get(f"{comfy_server}/history")
         history_response.raise_for_status()
         history = history_response.json()
     except requests.exceptions.ConnectionError:
-        return f"❌ Could not connect to ComfyUI at {comfyui_url}. Is it running?"
+        return f"❌ Could not connect to ComfyUI at {comfy_server}. Is it running?"
 
     os.makedirs(current_output_dir, exist_ok=True)
 
@@ -344,7 +373,7 @@ def download_outputs() -> str:
                         "subfolder": file.get("subfolder", "")
                     }
                     try:
-                        file_response = requests.get(f"{comfyui_url}/view", params=params)
+                        file_response = requests.get(f"{comfy_server}/view", params=params)
                         file_response.raise_for_status()
                         save_path = os.path.join(current_output_dir, filename)
                         with open(save_path, "wb") as f:
@@ -360,15 +389,15 @@ def get_job_status(all_jobs: bool = False) -> str:
         return "No submitted jobs found for current batch."
     
     try:
-        queue_response = requests.get(f"{comfyui_url}/queue")
+        queue_response = requests.get(f"{comfy_server}/queue")
         queue_response.raise_for_status()
         queue = queue_response.json()
 
-        history_response = requests.get(f"{comfyui_url}/history")
+        history_response = requests.get(f"{comfy_server}/history")
         history_response.raise_for_status()
         history = history_response.json()
     except requests.exceptions.ConnectionError:
-        return f"❌ Could not connect to ComfyUI at {comfyui_url}. Is it running?"
+        return f"❌ Could not connect to ComfyUI at {comfy_server}. Is it running?"
 
     running = [job[1] for job in queue.get("queue_running", [])]
     pending = [job[1] for job in queue.get("queue_pending", [])]
@@ -420,32 +449,32 @@ def cancel_jobs(cancel_all: bool = False, cancel_running: bool = False, prompt_i
 
         # Interrupt the currently running job
         if cancel_running or cancel_all:
-            response = requests.post(f"{comfyui_url}/interrupt")
+            response = requests.post(f"{comfy_server}/interrupt")
             response.raise_for_status()
             results.append("🛑 Interrupted currently running job.")
 
         # Clear all pending jobs from queue
         if cancel_all:
-            response = requests.post(f"{comfyui_url}/queue", json={"clear": True})
+            response = requests.post(f"{comfy_server}/queue", json={"clear": True})
             response.raise_for_status()
             results.append("🛑 Cleared all pending jobs from queue.")
 
         # Cancel specific jobs by ID
         elif prompt_ids:
-            response = requests.post(f"{comfyui_url}/queue", json={"delete": prompt_ids})
+            response = requests.post(f"{comfy_server}/queue", json={"delete": prompt_ids})
             response.raise_for_status()
             results.append(f"🛑 Cancelled {len(prompt_ids)} jobs: {', '.join(prompt_ids)}")
 
         # Default — cancel only current batch's pending jobs
         elif not cancel_running and not cancel_all:
-            response = requests.post(f"{comfyui_url}/queue", json={"delete": submitted_ids})
+            response = requests.post(f"{comfy_server}/queue", json={"delete": submitted_ids})
             response.raise_for_status()
             results.append(f"🛑 Cancelled current batch ({len(submitted_ids)} pending jobs)")
 
         return "\n".join(results)
 
     except requests.exceptions.ConnectionError:
-        return f"❌ Could not connect to ComfyUI at {comfyui_url}. Is it running?"
+        return f"❌ Could not connect to ComfyUI at {comfy_server}. Is it running?"
     except requests.exceptions.HTTPError as e:
         return f"❌ Failed to cancel jobs: {e}"
 
@@ -458,7 +487,8 @@ tool_dispatch = {
     "submit_jobs": submit_jobs,
     "download_outputs": download_outputs,
     "cancel_jobs": cancel_jobs,
-    "get_job_status": get_job_status
+    "get_job_status": get_job_status,
+    "set_machine": set_machine,
 }
 
 # 3. The agent loop
@@ -488,7 +518,7 @@ def run(user_message):
                 if block.type == "tool_use":
                     result = tool_dispatch[block.name](**block.input)
 
-                    print(f"Tool called: {block.name}({block.input}) → {result}")
+                    print(f"Tool called: {block.name}({block.input}) → \n{result}")
                     tool_results.append({
                         "type": "tool_result",
                         "tool_use_id": block.id,
