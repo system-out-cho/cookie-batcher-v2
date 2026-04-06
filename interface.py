@@ -219,7 +219,7 @@ def set_machine(machine_name: str):
     global comfy_server
 
     if (machine_name == "local"):
-        comfy_server = "insert_local_server_here"
+        comfy_server = os.getenv("COMFYUI_URL")
     else:
         comfy_server = f"http://{machine_name.lower()}.fas.fa.disney.com:8188"
     
