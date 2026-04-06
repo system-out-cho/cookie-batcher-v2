@@ -20,6 +20,7 @@ staged_plan = {}
 submitted_ids = []
 comfy_server = ""
 current_output_dir = ""
+end_condition = False
 
 # 1. Define the tool
 tools = [
@@ -180,7 +181,15 @@ tools = [
                 }
             }
         }
-    }
+    },
+    {
+        "name": "set_end_condition",
+        "description": "Ends the conversation with claude. Only run if user says words like `end conversation`",
+        "input_schema": {
+            "type": "object",
+            "properties": {}
+        }
+    },
 ]
 
 # I'm printing these to show the user editable parameters instead of appending to save on token usage.
@@ -478,6 +487,11 @@ def cancel_jobs(cancel_all: bool = False, cancel_running: bool = False, prompt_i
     except requests.exceptions.HTTPError as e:
         return f"❌ Failed to cancel jobs: {e}"
 
+def set_end_condition():
+    global end_condition
+    end_condition = True
+    return "Ending conversation..."
+
 tool_dispatch = {
     "parse_workflow": load_json,
     "print_workflow": print_workflow,
@@ -489,12 +503,12 @@ tool_dispatch = {
     "cancel_jobs": cancel_jobs,
     "get_job_status": get_job_status,
     "set_machine": set_machine,
+    "set_end_condition": set_end_condition
 }
 
 # 3. The agent loop
 def run(user_message):
     messages = [{"role": "user", "content": user_message}]
-    end_condition = False
 
     while not end_condition:
         response = client.messages.create(
