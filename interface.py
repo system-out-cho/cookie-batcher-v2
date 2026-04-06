@@ -146,18 +146,22 @@ tools = [
     },
     {
         "name": "cancel_jobs",
-        "description": "Cancels jobs in ComfyUI. Can cancel just the current batch, specific jobs by ID, or the entire queue. Ask the user which they want before calling.",
+        "description": "Cancels jobs in ComfyUI. Can cancel the current batch, specific jobs, the currently running job, or everything. Ask the user which they want before calling.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "cancel_all": {
                     "type": "boolean",
-                    "description": "If true, cancels ALL jobs in the queue not just the current batch"
+                    "description": "If true, interrupts the running job AND clears all pending jobs"
+                },
+                "cancel_running": {
+                    "type": "boolean",
+                    "description": "If true, interrupts only the currently running job without touching the queue"
                 },
                 "prompt_ids": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Specific prompt IDs to cancel. If omitted, cancels the current batch."
+                    "description": "Specific prompt IDs to cancel from the queue. If omitted, cancels the current batch."
                 }
             }
         }
@@ -410,24 +414,35 @@ def get_job_status(all_jobs: bool = False) -> str:
     return "\n".join(results) if results else "No jobs found on machine."
 
 
-def cancel_jobs(cancel_all: bool = False, prompt_ids: list = None) -> str:
+def cancel_jobs(cancel_all: bool = False, cancel_running: bool = False, prompt_ids: list = None) -> str:
     try:
+        results = []
+
+        # Interrupt the currently running job
+        if cancel_running or cancel_all:
+            response = requests.post(f"{comfyui_url}/interrupt")
+            response.raise_for_status()
+            results.append("🛑 Interrupted currently running job.")
+
+        # Clear all pending jobs from queue
         if cancel_all:
-            # Wipe the entire queue
             response = requests.post(f"{comfyui_url}/queue", json={"clear": True})
             response.raise_for_status()
-            return "🛑 All pending jobs cancelled."
-        
-        if prompt_ids:
-            # Cancel specific jobs by ID
+            results.append("🛑 Cleared all pending jobs from queue.")
+
+        # Cancel specific jobs by ID
+        elif prompt_ids:
             response = requests.post(f"{comfyui_url}/queue", json={"delete": prompt_ids})
             response.raise_for_status()
-            return f"🛑 Cancelled {len(prompt_ids)} jobs: {', '.join(prompt_ids)}"
-        
+            results.append(f"🛑 Cancelled {len(prompt_ids)} jobs: {', '.join(prompt_ids)}")
+
         # Default — cancel only current batch's pending jobs
-        response = requests.post(f"{comfyui_url}/queue", json={"delete": submitted_ids})
-        response.raise_for_status()
-        return f"🛑 Cancelled current batch ({len(submitted_ids)} jobs)"
+        elif not cancel_running and not cancel_all:
+            response = requests.post(f"{comfyui_url}/queue", json={"delete": submitted_ids})
+            response.raise_for_status()
+            results.append(f"🛑 Cancelled current batch ({len(submitted_ids)} pending jobs)")
+
+        return "\n".join(results)
 
     except requests.exceptions.ConnectionError:
         return f"❌ Could not connect to ComfyUI at {comfyui_url}. Is it running?"
@@ -484,5 +499,5 @@ def run(user_message):
 
 
 
-user_input = input("User: ")
+user_input = input("You: ")
 run(user_input)
