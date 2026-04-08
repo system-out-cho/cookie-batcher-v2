@@ -48,7 +48,7 @@ tools = [
     },
     {
         "name": "get_current_parameter",
-        "description": "Looks through the current ComfyUI workflow and returns the current value stored in the workflow. Call this if user asks for a value in the workflow.",
+        "description": "Looks up current values by parameter name (e.g. 'cfg', 'seed') OR by node ID (e.g. '68:190'). Accepts either. Call this if user asks for a value in the workflow.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -63,7 +63,7 @@ tools = [
     },
     {
         "name": "stage_batch",
-        "description": "Stages the batch render parameters for user review. Call this when the user is trying to make changes to the workflow for each of the renders that are going to be sent. Does NOT write anything to disk — just shows the user a summary of what will be rendered for confirmation.",
+        "description": "Stages the batch render parameters for user review. Call this when the user is trying to make changes to the workflow for each of the renders that are going to be sent. Does NOT write anything to disk — just shows the user a summary of what will be rendered for confirmation. Node IDs may contain colons for subgraph nodes (e.g. '68:190'). Always use the full ID exactly as shown in the workflow, including any colons.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -239,15 +239,16 @@ def get_current_parameter(parameter_names: list) -> dict:
     results = {}
     for node_id, node in current_workflow.items():
         for param, value in node["inputs"].items():
-            if param in parameter_names and not isinstance(value, list):
-                if node_id not in results:
-                    results[node_id] = {
-                        "title": node["_meta"]["title"],
-                        "class_type": node["class_type"],
-                        "params": {}
-                    }
-                results[node_id]["params"][param] = value
-
+            if not isinstance(value, list):
+                # Match by param name OR by node_id
+                if param in parameter_names or node_id in parameter_names:
+                    if node_id not in results:
+                        results[node_id] = {
+                            "title": node["_meta"]["title"],
+                            "class_type": node["class_type"],
+                            "params": {}
+                        }
+                    results[node_id]["params"][param] = value
     return results
 
 def stage_batch(render_count: int, overrides: dict) -> str:

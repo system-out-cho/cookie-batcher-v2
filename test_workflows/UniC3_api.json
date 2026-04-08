@@ -1,0 +1,663 @@
+{
+  "15": {
+    "inputs": {
+      "image": "end.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "End Frame"
+    }
+  },
+  "16": {
+    "inputs": {
+      "image": "start.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Start Frame"
+    }
+  },
+  "17": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "upscale_method": "lanczos",
+      "keep_proportion": "crop",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 32,
+      "device": "cpu",
+      "image": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "18": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "upscale_method": "lanczos",
+      "keep_proportion": "crop",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 32,
+      "device": "cpu",
+      "image": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "22": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "upscale_method": "bilinear",
+      "keep_proportion": "crop",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 16,
+      "device": "cpu",
+      "image": [
+        "25",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "25": {
+    "inputs": {
+      "video": "camera_control.mp4",
+      "force_rate": 0,
+      "custom_width": 0,
+      "custom_height": 0,
+      "frame_load_cap": 88,
+      "skip_first_frames": 0,
+      "select_every_nth": 1,
+      "format": "AnimateDiff"
+    },
+    "class_type": "VHS_LoadVideo",
+    "_meta": {
+      "title": "Motion Signal"
+    }
+  },
+  "69": {
+    "inputs": {
+      "filename_prefix": "video/ComfyUI",
+      "format": "auto",
+      "codec": "auto",
+      "video-preview": "",
+      "video": [
+        "68:216",
+        0
+      ]
+    },
+    "class_type": "SaveVideo",
+    "_meta": {
+      "title": "final_output"
+    }
+  },
+  "70": {
+    "inputs": {
+      "filename_prefix": "video/ComfyUI",
+      "format": "auto",
+      "codec": "auto",
+      "video-preview": "",
+      "video": [
+        "68:224",
+        0
+      ]
+    },
+    "class_type": "SaveVideo",
+    "_meta": {
+      "title": "Save Video"
+    }
+  },
+  "68:167": {
+    "inputs": {
+      "backend": "inductor",
+      "fullgraph": false,
+      "mode": "default",
+      "dynamic": false,
+      "dynamo_cache_size_limit": 64,
+      "compile_transformer_blocks_only": true,
+      "dynamo_recompile_limit": 128,
+      "force_parameter_static_shapes": false,
+      "allow_unmerged_lora_compile": false
+    },
+    "class_type": "WanVideoTorchCompileSettings",
+    "_meta": {
+      "title": "WanVideo Torch Compile Settings"
+    }
+  },
+  "68:173": {
+    "inputs": {
+      "model": [
+        "68:174",
+        0
+      ],
+      "block_swap_args": [
+        "68:172",
+        0
+      ]
+    },
+    "class_type": "WanVideoSetBlockSwap",
+    "_meta": {
+      "title": "WanVideo Set BlockSwap"
+    }
+  },
+  "68:168": {
+    "inputs": {
+      "model": [
+        "68:175",
+        0
+      ],
+      "block_swap_args": [
+        "68:172",
+        0
+      ]
+    },
+    "class_type": "WanVideoSetBlockSwap",
+    "_meta": {
+      "title": "WanVideo Set BlockSwap"
+    }
+  },
+  "68:172": {
+    "inputs": {
+      "blocks_to_swap": 35,
+      "offload_img_emb": false,
+      "offload_txt_emb": false,
+      "use_non_blocking": false,
+      "vace_blocks_to_swap": 1,
+      "prefetch_blocks": 0,
+      "block_swap_debug": false
+    },
+    "class_type": "WanVideoBlockSwap",
+    "_meta": {
+      "title": "WanVideo Block Swap"
+    }
+  },
+  "68:169": {
+    "inputs": {
+      "model": [
+        "68:168",
+        0
+      ],
+      "lora": [
+        "68:176",
+        0
+      ]
+    },
+    "class_type": "WanVideoSetLoRAs",
+    "_meta": {
+      "title": "WanVideo Set LoRAs"
+    }
+  },
+  "68:170": {
+    "inputs": {
+      "model": [
+        "68:173",
+        0
+      ],
+      "lora": [
+        "68:177",
+        0
+      ]
+    },
+    "class_type": "WanVideoSetLoRAs",
+    "_meta": {
+      "title": "WanVideo Set LoRAs"
+    }
+  },
+  "68:201": {
+    "inputs": {
+      "steps": [
+        "68:200",
+        0
+      ],
+      "cfg_scale_start": 2,
+      "cfg_scale_end": 2,
+      "interpolation": "linear",
+      "start_percent": 0,
+      "end_percent": 0.01
+    },
+    "class_type": "CreateCFGScheduleFloatList",
+    "_meta": {
+      "title": "Create CFG Schedule Float List"
+    }
+  },
+  "68:200": {
+    "inputs": {
+      "value": 6
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Steps"
+    }
+  },
+  "68:202": {
+    "inputs": {
+      "value": 3
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Split_step"
+    }
+  },
+  "68:206": {
+    "inputs": {
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "WanVideo2_2_I2V",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "68:205",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "68:212": {
+    "inputs": {
+      "enable_vae_tiling": false,
+      "tile_x": 272,
+      "tile_y": 272,
+      "tile_stride_x": 144,
+      "tile_stride_y": 128,
+      "normalization": "default",
+      "vae": [
+        "68:178",
+        0
+      ],
+      "samples": [
+        "68:189",
+        0
+      ]
+    },
+    "class_type": "WanVideoDecode",
+    "_meta": {
+      "title": "WanVideo Decode"
+    }
+  },
+  "68:216": {
+    "inputs": {
+      "fps": 24,
+      "images": [
+        "68:212",
+        0
+      ]
+    },
+    "class_type": "CreateVideo",
+    "_meta": {
+      "title": "final video"
+    }
+  },
+  "68:224": {
+    "inputs": {
+      "fps": 24,
+      "images": [
+        "68:223",
+        0
+      ]
+    },
+    "class_type": "CreateVideo",
+    "_meta": {
+      "title": "figure"
+    }
+  },
+  "68:205": {
+    "inputs": {
+      "enable_vae_tiling": false,
+      "tile_x": 272,
+      "tile_y": 272,
+      "tile_stride_x": 144,
+      "tile_stride_y": 128,
+      "normalization": "default",
+      "vae": [
+        "68:178",
+        0
+      ],
+      "samples": [
+        "68:190",
+        1
+      ]
+    },
+    "class_type": "WanVideoDecode",
+    "_meta": {
+      "title": "WanVideo Decode"
+    }
+  },
+  "68:164": {
+    "inputs": {
+      "model_name": "umt5-xxl-enc-bf16.safetensors",
+      "precision": "bf16",
+      "positive_prompt": "A richly textured, Rembrandt-style painted forest scene at dawn, with tall trees forming a dense canopy and dramatic golden light cutting through in strong beams. Deep shadows and warm highlights create a classical chiaroscuro look, with a handcrafted oil-painted aesthetic. The forest floor is detailed with leaves, roots, and subtle texture, receding into depth between the trees.\n\nThe scene begins completely still, like a frozen painting. The frame initially shows a section of the forest, balanced between light and shadow. After a brief pause, the camera begins a slow, smooth pan from left to right, revealing more of the forest as it moves, maintaining a cinematic and stable motion.\n\nAs the camera continues panning, a hare suddenly bursts into view from the left side of the frame, emerging from between the trees. It runs swiftly across the scene toward the right, moving in the same direction as the camera pan but at a faster pace, creating a dynamic contrast. Its motion is fluid and natural, with light bounding steps and subtle body compression as it runs.\n\nThe hare remains grounded in the scene, occasionally crossing patches of light and shadow, enhancing the depth and painterly realism. The environment itself remains completely static, emphasizing the motion of the hare against the still, detailed background.\n\nThe camera maintains its steady left-to-right pan as the hare continues running across the frame, gradually moving toward the right edge. Cinematic, smooth animation with controlled pacing and strong sense of depth. No text, subtitles, captions, credits, letters, or symbols anywhere in the frame.",
+      "negative_prompt": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走\ntext, no subtitles, no captions, no credits, no letters, no symbols anywhere in the frame",
+      "quantization": "disabled",
+      "use_disk_cache": true,
+      "device": "gpu"
+    },
+    "class_type": "WanVideoTextEncodeCached",
+    "_meta": {
+      "title": "WanVideo TextEncode Cached"
+    }
+  },
+  "68:189": {
+    "inputs": {
+      "steps": [
+        "68:200",
+        0
+      ],
+      "cfg": 1,
+      "shift": 8,
+      "seed": 43,
+      "force_offload": true,
+      "scheduler": "dpm++_sde",
+      "riflex_freq_index": 0,
+      "denoise_strength": 1,
+      "batched_cfg": false,
+      "rope_function": "comfy",
+      "start_step": [
+        "68:202",
+        0
+      ],
+      "end_step": -1,
+      "add_noise_to_samples": "",
+      "model": [
+        "68:170",
+        0
+      ],
+      "image_embeds": [
+        "68:196",
+        0
+      ],
+      "text_embeds": [
+        "68:164",
+        0
+      ],
+      "samples": [
+        "68:190",
+        0
+      ],
+      "uni3c_embeds": [
+        "68:229",
+        0
+      ]
+    },
+    "class_type": "WanVideoSampler",
+    "_meta": {
+      "title": "WanVideo Sampler"
+    }
+  },
+  "68:190": {
+    "inputs": {
+      "steps": [
+        "68:200",
+        0
+      ],
+      "cfg": [
+        "68:201",
+        0
+      ],
+      "shift": 8,
+      "seed": 717728658620725,
+      "force_offload": true,
+      "scheduler": "dpm++_sde",
+      "riflex_freq_index": 0,
+      "denoise_strength": 1,
+      "batched_cfg": false,
+      "rope_function": "comfy",
+      "start_step": 0,
+      "end_step": [
+        "68:202",
+        0
+      ],
+      "add_noise_to_samples": "",
+      "model": [
+        "68:169",
+        0
+      ],
+      "image_embeds": [
+        "68:196",
+        0
+      ],
+      "text_embeds": [
+        "68:164",
+        0
+      ],
+      "uni3c_embeds": [
+        "68:229",
+        0
+      ]
+    },
+    "class_type": "WanVideoSampler",
+    "_meta": {
+      "title": "WanVideo Sampler"
+    }
+  },
+  "68:196": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "num_frames": 81,
+      "noise_aug_strength": 0,
+      "start_latent_strength": 1,
+      "end_latent_strength": 1,
+      "force_offload": true,
+      "fun_or_fl2v_model": true,
+      "tiled_vae": false,
+      "augment_empty_frames": 0,
+      "vae": [
+        "68:178",
+        0
+      ],
+      "start_image": [
+        "18",
+        0
+      ],
+      "end_image": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "WanVideoImageToVideoEncode",
+    "_meta": {
+      "title": "WanVideo ImageToVideo Encode"
+    }
+  },
+  "68:226": {
+    "inputs": {
+      "enable_vae_tiling": false,
+      "tile_x": 272,
+      "tile_y": 272,
+      "tile_stride_x": 144,
+      "tile_stride_y": 128,
+      "noise_aug_strength": 0,
+      "latent_strength": 1,
+      "vae": [
+        "68:178",
+        0
+      ],
+      "image": [
+        "22",
+        0
+      ]
+    },
+    "class_type": "WanVideoEncode",
+    "_meta": {
+      "title": "WanVideo Encode"
+    }
+  },
+  "68:229": {
+    "inputs": {
+      "strength": 1,
+      "start_percent": 0,
+      "end_percent": 1,
+      "offload": true,
+      "controlnet": [
+        "68:228",
+        0
+      ],
+      "render_latent": [
+        "68:226",
+        0
+      ]
+    },
+    "class_type": "WanVideoUni3C_embeds",
+    "_meta": {
+      "title": "WanVideo Uni3C Embeds"
+    }
+  },
+  "68:223": {
+    "inputs": {
+      "direction": "up",
+      "match_image_size": true,
+      "image1": [
+        "68:212",
+        0
+      ],
+      "image2": [
+        "68:222",
+        0
+      ]
+    },
+    "class_type": "ImageConcanate",
+    "_meta": {
+      "title": "Image Concatenate"
+    }
+  },
+  "68:222": {
+    "inputs": {
+      "direction": "right",
+      "match_image_size": true,
+      "image1": [
+        "68:219",
+        0
+      ],
+      "image2": [
+        "22",
+        0
+      ]
+    },
+    "class_type": "ImageConcanate",
+    "_meta": {
+      "title": "Image Concatenate"
+    }
+  },
+  "68:219": {
+    "inputs": {
+      "direction": "right",
+      "match_image_size": true,
+      "image1": [
+        "18",
+        0
+      ],
+      "image2": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "ImageConcanate",
+    "_meta": {
+      "title": "Image Concatenate"
+    }
+  },
+  "68:176": {
+    "inputs": {
+      "lora": "extras_loras/wan2.2_i2v_A14b_high_noise_lora_rank64_lightx2v_4step_1022.safetensors",
+      "strength": 1,
+      "low_mem_load": false,
+      "merge_loras": false
+    },
+    "class_type": "WanVideoLoraSelect",
+    "_meta": {
+      "title": "WanVideo Lora Select"
+    }
+  },
+  "68:177": {
+    "inputs": {
+      "lora": "extras_loras/wan2.2_i2v_A14b_low_noise_lora_rank64_lightx2v_4step_1022.safetensors",
+      "strength": 1,
+      "low_mem_load": false,
+      "merge_loras": false
+    },
+    "class_type": "WanVideoLoraSelect",
+    "_meta": {
+      "title": "WanVideo Lora Select"
+    }
+  },
+  "68:175": {
+    "inputs": {
+      "model": "extras_diffusion_models/Wan2_2-I2V-A14B-HIGH_bf16.safetensors",
+      "base_precision": "fp16_fast",
+      "quantization": "disabled",
+      "load_device": "offload_device",
+      "attention_mode": "sdpa",
+      "rms_norm_function": "default"
+    },
+    "class_type": "WanVideoModelLoader",
+    "_meta": {
+      "title": "WanVideo Model Loader"
+    }
+  },
+  "68:174": {
+    "inputs": {
+      "model": "extras_diffusion_models/Wan2_2-I2V-A14B-LOW_bf16.safetensors",
+      "base_precision": "fp16_fast",
+      "quantization": "disabled",
+      "load_device": "offload_device",
+      "attention_mode": "sdpa",
+      "rms_norm_function": "default"
+    },
+    "class_type": "WanVideoModelLoader",
+    "_meta": {
+      "title": "WanVideo Model Loader"
+    }
+  },
+  "68:178": {
+    "inputs": {
+      "model_name": "wanvideo/Wan2_1_VAE_bf16.safetensors",
+      "precision": "bf16",
+      "use_cpu_cache": false,
+      "verbose": false
+    },
+    "class_type": "WanVideoVAELoader",
+    "_meta": {
+      "title": "WanVideo VAE Loader"
+    }
+  },
+  "68:228": {
+    "inputs": {
+      "model": "extra_controlnet/Wan21_Uni3C_controlnet_fp16.safetensors",
+      "base_precision": "fp16",
+      "quantization": "disabled",
+      "load_device": "main_device",
+      "attention_mode": "sdpa"
+    },
+    "class_type": "WanVideoUni3C_ControlnetLoader",
+    "_meta": {
+      "title": "WanVideo Uni3C Controlnet Loader"
+    }
+  }
+}
