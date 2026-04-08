@@ -1,0 +1,3 @@
+- ability to upload images/videos for input videos 
+- canceling / viewing Jobs (DONE)
+- add metadata like user, date, and job index for each job (DONE)
