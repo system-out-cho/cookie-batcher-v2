@@ -190,6 +190,19 @@ tools = [
             "properties": {}
         }
     },
+    {
+        "name": "rename_outputs",
+        "description": "Renames rendered image files to match their source .json filenames, stripping ComfyUI's extra suffixes like _00001_. Pairs each image to its json first, then renames.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "output_dir": {
+                    "type": "string",
+                    "description": "Directory to scan. Defaults to the current output directory if omitted."
+                }
+            }
+        }
+    },
 ]
 
 # I'm printing these to show the user editable parameters instead of appending to save on token usage.
@@ -488,6 +501,46 @@ def cancel_jobs(cancel_all: bool = False, cancel_running: bool = False, prompt_i
     except requests.exceptions.HTTPError as e:
         return f"❌ Failed to cancel jobs: {e}"
 
+def rename_outputs(output_dir: str = None) -> str:
+    """Renames image files to match their source .json filenames."""
+    target_dir = output_dir or current_output_dir
+    if not target_dir:
+        return "No output directory set."
+
+    files = os.listdir(target_dir)
+    pngs = sorted([f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif'))])
+    jsons = sorted([f for f in files if f.lower().endswith('.json')])
+    json_bases = {os.path.splitext(j)[0]: j for j in jsons}
+
+    results = []
+    for png in pngs:
+        png_name, png_ext = os.path.splitext(png)
+        candidate = png_name.rstrip('_')
+        matched_base = None
+
+        while candidate:
+            if candidate in json_bases:
+                matched_base = candidate
+                break
+            if '_' in candidate:
+                candidate = candidate.rsplit('_', 1)[0]
+            else:
+                break
+
+        if matched_base:
+            new_name = matched_base + png_ext
+            if new_name != png:
+                src = os.path.join(target_dir, png)
+                dst = os.path.join(target_dir, new_name)
+                os.rename(src, dst)
+                results.append(f"✏️  {png} → {new_name}")
+            else:
+                results.append(f"✅ {png} (already clean)")
+        else:
+            results.append(f"❓ {png} (no matching json, skipped)")
+
+    return "\n".join(results) if results else "No image files found."
+
 def set_end_condition():
     global end_condition
     end_condition = True
@@ -504,6 +557,7 @@ tool_dispatch = {
     "cancel_jobs": cancel_jobs,
     "get_job_status": get_job_status,
     "set_machine": set_machine,
+    "rename_outputs": rename_outputs,
     "set_end_condition": set_end_condition
 }
 
@@ -522,7 +576,7 @@ def run(user_message):
 
         if response.stop_reason == "end_turn":
             print(response.content[0].text)
-            user_input = input("You: ")
+            user_input = input(f"{current_user} (baker): ")
             messages.append({"role": "user", "content": user_input})
 
         if response.stop_reason == "tool_use":
