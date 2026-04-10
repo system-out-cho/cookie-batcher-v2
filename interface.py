@@ -22,6 +22,8 @@ comfy_server = ""
 current_output_dir = ""
 end_condition = False
 
+SESSION_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "baker_sessions.json")
+
 # 1. Define the tool
 tools = [
     {
@@ -180,6 +182,29 @@ tools = [
                     "description": "Specific prompt IDs to cancel from the queue. If omitted, cancels the current batch."
                 }
             }
+        }
+    },
+    {
+    "name": "list_past_sessions",
+    "description": "Lists all past render sessions from previous runs of the tool. Call this when the user wants to download past renders.",
+    "input_schema": {"type": "object", "properties": {}}
+    },
+    {
+        "name": "download_past_session",
+        "description": "Downloads outputs from a past session by its index from list_past_sessions.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "session_index": {
+                    "type": "integer",
+                    "description": "Index of the session from list_past_sessions"
+                },
+                "output_dir": {
+                    "type": "string",
+                    "description": "Optional override for where to save the downloaded files. Defaults to the original session output dir."
+                }
+            },
+            "required": ["session_index"]
         }
     },
     {
@@ -358,7 +383,7 @@ def submit_jobs(output_dir: str) -> str:
             return f"❌ Could not connect to ComfyUI at {comfy_server}. Is it running?"
         except requests.exceptions.HTTPError as e:
             results.append(f"❌ {filename} → failed: {e}")
-
+    save_session(output_dir)
     return "\n".join(results)
 
 
@@ -540,6 +565,49 @@ def rename_outputs(output_dir: str = None) -> str:
             results.append(f"❓ {png} (no matching json, skipped)")
 
     return "\n".join(results) if results else "No image files found."
+def save_session(output_dir: str):
+    sessions = load_sessions()
+    entry = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "machine": comfy_server,
+        "output_dir": output_dir,
+        "prompt_ids": submitted_ids.copy()
+    }
+    sessions.append(entry)
+    with open(SESSION_LOG, "w") as f:
+        json.dump(sessions, f, indent=2)
+
+def load_sessions() -> list:
+    if not os.path.exists(SESSION_LOG):
+        return []
+    with open(SESSION_LOG) as f:
+        return json.load(f)
+
+def list_past_sessions() -> str:
+    sessions = load_sessions()
+    if not sessions:
+        return "No past sessions found."
+    lines = []
+    for i, s in enumerate(sessions):
+        lines.append(
+            f"[{i}] {s['timestamp']}  |  {len(s['prompt_ids'])} jobs  "
+            f"|  {s['output_dir']}  |  {s['machine']}"
+        )
+    return "\n".join(lines)
+
+def download_past_session(session_index: int, output_dir: str = None) -> str:
+    global submitted_ids, current_output_dir, comfy_server
+    sessions = load_sessions()
+    if session_index >= len(sessions):
+        return "Invalid session index."
+    
+    session = sessions[session_index]
+    submitted_ids = session["prompt_ids"]
+    current_output_dir = output_dir or session["output_dir"]
+    comfy_server = session["machine"]  # restore the machine too
+    
+    return download_outputs()  # reuse existing logic
+
 
 def set_end_condition():
     global end_condition
@@ -558,6 +626,8 @@ tool_dispatch = {
     "get_job_status": get_job_status,
     "set_machine": set_machine,
     "rename_outputs": rename_outputs,
+    "list_past_sessions": list_past_sessions,
+    "download_past_session": download_past_session,
     "set_end_condition": set_end_condition
 }
 
