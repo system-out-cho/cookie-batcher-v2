@@ -1,3 +1,4 @@
 - ability to upload images/videos for input videos 
+- ability to download past jobs from past sessions
 - canceling / viewing Jobs (DONE)
 - add metadata like user, date, and job index for each job (DONE)

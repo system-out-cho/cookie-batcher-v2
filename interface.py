@@ -217,7 +217,7 @@ tools = [
     },
     {
         "name": "rename_outputs",
-        "description": "Renames rendered image files to match their source .json filenames, stripping ComfyUI's extra suffixes like _00001_. Pairs each image to its json first, then renames.",
+        "description": "Renames rendered image or video files to match their source .json filenames, stripping ComfyUI's extra suffixes like _00001_. Pairs each image to its json first, then renames.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -533,7 +533,7 @@ def rename_outputs(output_dir: str = None) -> str:
         return "No output directory set."
 
     files = os.listdir(target_dir)
-    pngs = sorted([f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif'))])
+    pngs = sorted([f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4'))])
     jsons = sorted([f for f in files if f.lower().endswith('.json')])
     json_bases = {os.path.splitext(j)[0]: j for j in jsons}
 
